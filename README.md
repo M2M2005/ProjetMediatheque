@@ -97,7 +97,7 @@ La plupart des outils pour communiquer avec la base de données vous sont fourni
 	```json
 	{"idLivre":15,"titreLivre":"PHP pour les nuls"}
 	```
-  - `ControllerAdherent.php?create=readAll` attend des données `POST` comme
+  - `ControllerAdherent.php?action=create` attend des données `POST` comme
     `nom=xxx` et renvoie le nouvel identifiant, *par ex.* `"43"`.  
     Idem pour les livres : données `POST` comme `titre=xxx`, renvoie le nouvel identifiant.  
 	Idem pour les emprunts : données `POST` comme `idAdherent=43&idLivre=36` et ne retourne rien
