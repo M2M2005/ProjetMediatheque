@@ -46,7 +46,7 @@ L’utilisateur de la médiathèque pourra au minimum :
 
 + enregistrer un nouvel adhérent ;
 + enregistrer un nouveau livre ;
-+ voir à tout moment la liste des adhérents et le nombre de livres qu'ils ont empruntés;
++ voir à tout moment la liste des adhérents et le nombre de livres qu'ils ont empruntés ;
 + voir à tout moment la liste des livres disponibles et celle des livres
   empruntés ;
 + avoir accès, par un clic sur le nom de l’adhérent, à la liste des livres qu’il a en sa possession en ce moment ;
@@ -137,6 +137,7 @@ suggestions :
    <img alt="" src="src/img/image.svg" style="background-color:lightgrey" />).
 * afficher l'emprunteur d'un livre en cliquant sur 
   <img alt="" src="src/img/person.svg" style="background-color:lightgrey" />.
-* Utilisation de `fetch()` et `async`/`await` : Vous devrez utiliser les deux
+* Utilisation de `fetch()` avec `then()` et avec `async`/`await` : 
+  Vous devrez utiliser les deux
   syntaxes qui ont été présentées dans le
   [TD6](https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/TD6).
