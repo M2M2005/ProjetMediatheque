@@ -4,9 +4,10 @@ class Conf {
 
     private static $database = array(
         'hostname' => 'webinfo.iutmontp.univ-montp2.fr',
-        'database' => '...', // à compléter avec vos données personnelles
-        'login'    => '...', // à compléter avec vos données personnelles
-        'password' => '...'  // à compléter avec vos données personnelles
+        'database' => '',   // le nom de votre base de données (votre login)
+        'login'    => '',   // votre login
+        'password' => '',    // le mot de passe pour la connexion à la base de données
+        'port' => '3316' //3316 à l'iut, sinon probablement 3306
     );
 
     static public function getLogin() {
@@ -25,6 +26,9 @@ class Conf {
         return self::$database['password'];
     }
 
+    static public function getPort() {
+        return self::$database['port'];
+    }
 }
 
 ?>
