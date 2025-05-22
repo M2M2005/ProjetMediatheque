@@ -12,7 +12,7 @@ lang: fr
 Veuillez *fork* ce projet sur le GitLab de l'IUT **une fois par groupe de projet** avant de commencer le travail.
 Ce *fork* devra se trouver à une adresse de la forme https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/etu/votre_login_IUT/ProjetMediatheque .
 Rajoutez bien votre enseignant (en plus des autres membres du projet) dans les membres du projet avec la permission *Owner*.
-Clonez ce projet dans votre répertoire `public_html` pour être accessible de l'extérieur.
+Clonez ce projet dans votre répertoire `public_html` pour pouvoir être servi par votre serveur Web Docker.
 
 **Date limite de rendu :** 
 * Groupe Q3 : Dimanche 1er juin (23:59)
@@ -22,7 +22,10 @@ Clonez ce projet dans votre répertoire `public_html` pour être accessible de l
 
 Dans ce module, vous aurez deux notes : l'évaluation de ce projet (50%) et l'examen écrit final (50%). 
 
-Vous devez travailler en binôme ou en trinôme. Le rendu se fera à la fois en poussant votre travail sur le dépôt *GitLab* et en communiquant à votre enseignant une adresse accessible de l'extérieur sur laquelle on pourra tester directement dans un navigateur les fonctionnalités implémentées (par exemple le lien vers votre répertoire `public_html`).
+Vous devez travailler en binôme ou en trinôme. Le rendu se fera à la fois en
+poussant votre travail sur le dépôt *GitLab*, en déployant le site sur `webinfo`
+et en communiquant à votre enseignant l'URL sur `webinfo` où vous avez déployé
+le site.
 
 Pour ce travail, vous allez devoir programmer le fonctionnement d’une mini médiathèque. Vous aurez à gérer des adhérents, des livres et des emprunts.
 
@@ -122,7 +125,7 @@ La deuxième partie des points demandera de gérer les évènements utilisateur 
 - Maintenez une organisation claire des fichiers et du code
   - Placez les fichiers dans les répertoires adaptés
   - Nommez vos fonctions, méthodes et variables pour que leur signification soit claire
-  - Commentez les fonctions dont l'action n'est pas immédiatement compréhensibles
+  - Commentez les fonctions dont l'action n'est pas immédiatement compréhensible
   - Regroupez votre code dans des classes lorsque c'est pertinent.
 - Il existe de nombreuses façons d'implémenter les différentes fonctionnalités. Réfléchissez éventuellement un peu aux différentes alternatives avant de vous lancer dans la programmation, et éventuellement envisagez de refactoriser votre travail si vous pensez que les choix que vous avez fait initialement ne sont pas pertinents.
 - Il y a en particulier plusieurs solutions pour gérer les liens BD/infos locales/interface. La plus simple est probablement d'avoir une fonction qui charge toute la base et qui met toute l'interface à jour (en utilisant l'objet réactif). Ensuite, dès que l'utilisateur fait une modification: on met à jour la base, puis on utilise la fonction précédemment citée pour remettre à jour toutes les données locales (sans chercher à optimiser) et l'interface à jour.
