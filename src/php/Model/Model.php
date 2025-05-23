@@ -38,8 +38,8 @@ class Model
             $rep->setFetchMode(PDO::FETCH_CLASS, $class_name);
             return $rep->fetchAll();
         } catch (PDOException $e) {
-            echo $e->getMessage(); // affiche un message d'erreur
-            die();
+            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            return null;
         }
     }
 
@@ -67,8 +67,8 @@ class Model
                 return false;
             return $tab_results[0];
         } catch (PDOException $e) {
-            echo $e->getMessage(); // affiche un message d'erreur
-            die();
+            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            return null;
         }
     }
 
@@ -87,8 +87,8 @@ class Model
             // On donne les valeurs et on exécute la requête
             return $req_prep->execute($values);
         } catch (PDOException $e) {
-            echo $e->getMessage(); // affiche un message d'erreur
-            die();
+            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            return false;
         }
     }
 
@@ -109,8 +109,8 @@ class Model
             // On donne les valeurs et on exécute la requête
             return $req_prep->execute($data);
         } catch (PDOException $e) {
-            echo $e->getMessage(); // affiche un message d'erreur
-            die();
+            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            return false;
         }
     }
 
@@ -143,8 +143,8 @@ class Model
             self::$pdo->commit();
             return $id;
         } catch (PDOException $e) {
-            echo $e->getMessage();
-            die("Erreur lors de l\'insertion dans la BDD " . static::$table);
+            echo json_encode(["error" => $e->getMessage()]);
+            return null;
         }
     }
 

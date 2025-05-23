@@ -27,22 +27,25 @@
 	<div id="listes">
 		<div id="adh">
 			<fieldset>
+<h2>Livres de l'adhérent</h2>
+    <div id="listeLivresAdherent"></div>
 				<legend>adhérents</legend>
-				<div id="listeAdherents"></div>
+				<div id="listeAdherents" data-htmlvar="mediatheque.adherents"></div>
 			</fieldset>
 		</div>
 		<div id="dispos">
 			<fieldset>
 				<legend>livres disponibles</legend>
-				<div id="listeLivresDisponibles"></div>
+				<div id="listeLivresDisponibles" data-htmlvar="mediatheque.livresDisponibles"></div>
 			</fieldset>
 		</div>
 		<div id="empr">
 			<fieldset>
 				<legend>livres empruntés</legend>
-				<div id="listeLivresEmpruntes"></div>
+				<div id="listeLivresEmpruntes" data-htmlvar="mediatheque.livresEmpruntes"></div>
 			</fieldset>
 		</div>
 	</div>
+<script src="js/script.js" type="module"></script>
 </body>
 </html>

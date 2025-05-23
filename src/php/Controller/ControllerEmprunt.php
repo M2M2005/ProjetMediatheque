@@ -1,19 +1,25 @@
 <?php
 
 require_once "../Model/ModelEmprunt.php";
-
+require_once "../Model/Model.php";
+Model::init_pdo();
 $action = $_GET["action"] ?? "read";
-$actions = get_class_methods("ControlleurEmprunt");
+$actions = get_class_methods("ControllerEmprunt");
 if (in_array($action, $actions))
-    ControlleurEmprunt::$action();
+    ControllerEmprunt::$action();
 
-class ControlleurEmprunt
+class ControllerEmprunt
 {
 
     static function readAll()
     {
-        $emprunts = ModelEmprunt::selectAll();
-        echo json_encode($emprunts);
+        header('Content-Type: application/json');
+        try {
+            $emprunts = ModelEmprunt::selectAll();
+            echo json_encode($emprunts);
+        } catch (Exception $e) {
+            echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+        }
     }
 
     static function create()
@@ -22,7 +28,8 @@ class ControlleurEmprunt
             "idAdherent" => $_POST["idAdherent"],
             "idLivre" => $_POST["idLivre"]
         ];
-        ModelEmprunt::save($emprunt);
+        $id = ModelEmprunt::save($emprunt);
+        echo json_encode($id);
     }
 
     static function delete()

@@ -1,19 +1,25 @@
 <?php
 
 require_once "../Model/ModelAdherent.php";
-
+require_once "../Model/Model.php";
+Model::init_pdo();
 $action = $_GET["action"] ?? "read";
-$actions = get_class_methods("ControlleurAdherent");
+$actions = get_class_methods("ControllerAdherent");
 if (in_array($action, $actions))
-    ControlleurAdherent::$action();
+    ControllerAdherent::$action();
 
-class ControlleurAdherent
+class ControllerAdherent
 {
 
     static function readAll()
     {
-        $adherents = ModelAdherent::selectAll();
-        echo json_encode($adherents);
+        header('Content-Type: application/json');
+        try {
+            $adherents = ModelAdherent::selectAll();
+            echo json_encode($adherents);
+        } catch (Exception $e) {
+            echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+        }
     }
 
     static function create()

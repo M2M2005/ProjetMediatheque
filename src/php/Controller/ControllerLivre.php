@@ -1,19 +1,25 @@
 <?php
 
 require_once "../Model/ModelLivre.php";
-
+require_once "../Model/Model.php";
+Model::init_pdo();
 $action = $_GET["action"] ?? "read";
-$actions = get_class_methods("ControlleurLivre");
+$actions = get_class_methods("ControllerLivre");
 if (in_array($action, $actions))
-    ControlleurLivre::$action();
+    ControllerLivre::$action();
 
-class ControlleurLivre
+class ControllerLivre
 {
 
     static function readAll()
     {
-        $livres = ModelLivre::selectAll();
-        echo json_encode($livres);
+        header('Content-Type: application/json');
+        try {
+            $livres = ModelLivre::selectAll();
+            echo json_encode($livres);
+        } catch (Exception $e) {
+            echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+        }
     }
 
     static function create()
