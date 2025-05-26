@@ -20,7 +20,7 @@ function getAllAdherents() {
                     adherent.nombreLivresEmpruntes = count !== null ? count : 'N/A';
                     return `<div>
                         <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
-                        ${adherent.nomAdherent} 
+                        ${adherent.idAdherent} - ${adherent.nomAdherent} 
                         (${adherent.nombreLivresEmpruntes} emprunt${adherent.nombreLivresEmpruntes > 1 ? 's' : ''} 
                         <img src="img/book.svg" alt="book" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
                     </div>`;
@@ -78,11 +78,11 @@ window.afficherLivresAdherent = function (idAdherent) {
     modalAdherentName.textContent = "";
     modalLivresList.innerHTML = "";
 
-    closeButton.onclick = function() {
+    closeButton.onclick = function () {
         modal.style.display = "none";
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
@@ -90,23 +90,14 @@ window.afficherLivresAdherent = function (idAdherent) {
 
     fetch(`/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=select&id=${idAdherent}`)
         .then(response => {
-            // Vérifier si la réponse est OK avant de tenter de la parser en JSON
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             return response.json();
         })
         .then(adherentData => {
-            if (adherentData && !adherentData.error) {
                 nomAdherent = adherentData.nomAdherent;
-            }
             modalAdherentName.textContent = `Livres empruntés par ${nomAdherent}`;
 
             fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=selectOf&idAdherent=' + idAdherent)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
                     return response.json();
                 })
                 .then(livresEmpruntes => {
@@ -121,29 +112,14 @@ window.afficherLivresAdherent = function (idAdherent) {
                         noLivresDiv.textContent = "Aucun livre emprunté.";
                         modalLivresList.appendChild(noLivresDiv);
                     }
-
                     modal.style.display = "flex";
                 })
-                .catch(error => {
-                    console.error("Erreur de récupération des livres empruntés:", error);
-                    modalAdherentName.textContent = `Impossible de récupérer les livres pour ${nomAdherent}.`;
-                    modalLivresList.innerHTML = '';
-                    modal.style.display = "flex";
-                });
         })
-        .catch(error => {
-            console.error("Erreur de récupération des informations de l'adhérent:", error);
-            modalAdherentName.textContent = "Impossible de récupérer les informations de l'adhérent.";
-            modalLivresList.innerHTML = '';
-            modal.style.display = "flex";
-        });
 };
 
-function preterLivre(idLivre) {
-    // TODO : par un clic sur le titre du livre disponible à l’emprunt, à une fenêtre qui permet de prêter le livre à un adhérent ;
-    // voir img readme
-    // utiliser les méthodes natives alert(), prompt() et confirm()
+window.preterLivre = function (idLivre) {
     const idAdherent = prompt("Entrez l'ID de l'adhérent à qui prêter le livre:");
+
     if (idAdherent) {
         const formData = new FormData();
         formData.append('idAdherent', idAdherent);
@@ -153,12 +129,14 @@ function preterLivre(idLivre) {
             method: 'POST',
             body: formData
         })
-            .then(response => response.text())
+            .then(response => {
+                return response.text();
+            })
             .then(data => {
-                console.log('New emprunt:', data);
+                console.log('Nouvel emprunt:', data);
                 getAllLivresDisponibles();
                 getAllLivresEmpruntes();
-            });
+            })
     }
 }
 
@@ -233,16 +211,8 @@ function nblivre(adherent) {
             return response.json();
         })
         .then(data => {
-            if (data.error) {
-                console.error("Erreur côté serveur pour ID " + adherent.idAdherent + ":", data.error);
-                return null;
-            }
             return data.count; // Retourne le nombre
         })
-        .catch(error => {
-            console.error("Erreur lors de la récupération du nombre d'emprunts pour ID " + adherent.idAdherent + ":", error);
-            return null;
-        });
 }
 
 document.getElementById('ajouterAdherent').addEventListener('click', addAdherent);
