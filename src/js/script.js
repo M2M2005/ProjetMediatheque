@@ -17,7 +17,7 @@ function getAllAdherents() {
             console.log('Adherents data:', data);
             mediatheque.adherents = data.map(adherent => {
                 // TODO : Ajouter info sur les livres empruntés par l’adhérent + img livre
-                return `<div><button onclick="deleteAdherent(${adherent.idAdherent})">Supprimer</button> ${adherent.nomAdherent}</div>`;
+                return `<div><img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> ${adherent.nomAdherent}</div>`;
             }).join('');
         });
 }
@@ -28,7 +28,7 @@ function getAllLivresDisponibles() {
         .then(data => {
             console.log('Livres disponibles data:', data);
             mediatheque.livresDisponibles = data.map(livre => {
-                return `<div><button onclick="deleteLivre(${livre.idLivre})">Supprimer</button><a href="#" onclick="preterLivre(${livre.idLivre})"> ${livre.titreLivre}</a></div>`;
+                return `<div><img src="img/x.svg" onclick="deleteLivre(${livre.idLivre})" alt="delete"><a href="#" onclick="preterLivre(${livre.idLivre})"> ${livre.titreLivre}</a></div>`;
             }).join('');
         });
 }
@@ -39,7 +39,7 @@ function getAllLivresEmpruntes() {
         .then(data => {
             console.log('Livres empruntés data:', data);
             mediatheque.livresEmpruntes = data.map(emprunt => {
-                return `<div><a href="#" onclick="restituerLivre(${emprunt.idLivre})">Livre ID: ${emprunt.idLivre}, Adhérent ID: ${emprunt.idAdherent}</a></div>`;
+                return `<div><img src="img/x.svg" onclick="restituerLivre(${emprunt.idLivre})" alt="delete">Livre ID: ${emprunt.idLivre}, Adhérent ID: ${emprunt.idAdherent}</div>`;
             }).join('');
         });
 }
