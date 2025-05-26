@@ -37,4 +37,15 @@ class ControllerEmprunt
         $idLivre = $_GET["idLivre"];
         ModelEmprunt::delete($idLivre);
     }
+
+    static function nomberOfEmprunts()
+    {
+        header('Content-Type: application/json');
+        try {
+            $count = ModelEmprunt::numberOf($_idAdherent = $_GET["idAdherent"]);
+            echo json_encode(["count" => $count]);
+        } catch (Exception $e) {
+            echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+        }
+    }
 }

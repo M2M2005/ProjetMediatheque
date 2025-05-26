@@ -17,7 +17,12 @@ function getAllAdherents() {
             console.log('Adherents data:', data);
             mediatheque.adherents = data.map(adherent => {
                 // TODO : Ajouter info sur les livres empruntés par l’adhérent + img livre
-                return `<div><img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> ${adherent.nomAdherent}</div>`;
+                return `<div>
+                    <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
+                    ${adherent.nomAdherent} 
+                    (${nblivre(adherent)} emprunt${adherent.nombreLivresEmpruntes > 1 ? 's' : ''} 
+                    <img src="img/livre.svg" alt="livre" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
+                </div>`;
             }).join('');
         });
 }
@@ -150,6 +155,11 @@ function addLivre() {
             console.log('New livre ID:', data);
             getAllLivresDisponibles();
         });
+}
+
+function nblivre(adherent) {
+     return fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
+        .then(response => response.text());
 }
 
 // Add event listeners to the buttons
