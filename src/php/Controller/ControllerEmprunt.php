@@ -57,4 +57,20 @@ class ControllerEmprunt
                 echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
             }
         }
+
+    static function selectOf()
+    {
+        header('Content-Type: application/json');
+        $idAdherent = $_GET["idAdherent"] ?? null;
+        if ($idAdherent === null) {
+            echo json_encode(["error" => "L'ID de l'adhérent est manquant."]);
+            return;
+        }
+        try {
+            $emprunts = ModelEmprunt::selectOfAdherent($idAdherent);
+            echo json_encode($emprunts);
+        } catch (Exception $e) {
+            echo json_encode(["error" => "Erreur lors de la récupération des emprunts."]);
+        }
+    }
 }

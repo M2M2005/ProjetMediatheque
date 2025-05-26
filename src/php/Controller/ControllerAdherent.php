@@ -37,4 +37,23 @@ class ControllerAdherent
         ModelAdherent::delete($id);
     }
 
+    static function select()
+        {
+            header('Content-Type: application/json');
+            $id = $_GET["id"] ?? null;
+            if ($id === null) {
+                echo json_encode(["error" => "L'ID de l'adhérent est manquant."]);
+                return;
+            }
+            try {
+                $adherent = ModelAdherent::select($id); // Appelle la méthode select du modèle
+                if ($adherent) {
+                    echo json_encode($adherent);
+                } else {
+                    echo json_encode(["error" => "Adhérent non trouvé."]);
+                }
+            } catch (Exception $e) {
+                echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+            }
+        }
 }

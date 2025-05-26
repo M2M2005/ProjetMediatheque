@@ -22,4 +22,17 @@ class ModelEmprunt extends Model {
             return null;
         }
     }
+
+    public static function selectOfAdherent($idAdherent) {
+        try {
+            $pdo = Model::$pdo;
+            $sql = "SELECT * FROM emprunt WHERE idAdherent = :idAdherent";
+            $req_prep = $pdo->prepare($sql);
+            $values = array("idAdherent" => $idAdherent);
+            $req_prep->execute($values);
+            return $req_prep->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }

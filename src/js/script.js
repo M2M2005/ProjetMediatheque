@@ -17,7 +17,7 @@ function getAllAdherents() {
             console.log('Adherents data:', adherentsData);
             const promises = adherentsData.map(adherent => {
                 return nblivre(adherent).then(count => {
-                    adherent.nombreLivresEmpruntes = count !== null ? count : 'N/A'; // Gérer le cas null
+                    adherent.nombreLivresEmpruntes = count !== null ? count : 'N/A';
                     return `<div>
                         <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
                         ${adherent.nomAdherent} 
@@ -68,24 +68,76 @@ function getAllLivresEmpruntes() {
 }
 
 window.afficherLivresAdherent = function (idAdherent) {
-    // TODO :  par un clic sur le nom de l’adhérent, à la liste des livres qu’il a en sa possession en ce moment ;
-    // voir img readme
-    // dans un fenetre
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=readAll')
-        .then(response => response.json())
-        .then(data => {
-            console.log('Livres empruntés data:', data);
-            const listeLivresAdherent = document.getElementById('listeLivresAdherent');
-            listeLivresAdherent.innerHTML = '';
-            data.forEach(emprunt => {
-                if (emprunt.idAdherent == idAdherent) {
-                    const livreElement = document.createElement('div');
-                    livreElement.textContent = "Livre ID: " + emprunt.idLivre;
-                    listeLivresAdherent.appendChild(livreElement);
-                }
-            });
+    let nomAdherent = "Adhérent inconnu";
+
+    const modal = document.getElementById('modalLivresAdherent');
+    const modalAdherentName = document.getElementById('modalAdherentName');
+    const modalLivresList = document.getElementById('modalLivresList');
+    const closeButton = document.querySelector('.close-button');
+
+    modalAdherentName.textContent = "";
+    modalLivresList.innerHTML = "";
+
+    closeButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    fetch(`/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=select&id=${idAdherent}`)
+        .then(response => {
+            // Vérifier si la réponse est OK avant de tenter de la parser en JSON
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(adherentData => {
+            if (adherentData && !adherentData.error) {
+                nomAdherent = adherentData.nomAdherent;
+            }
+            modalAdherentName.textContent = `Livres empruntés par ${nomAdherent}`;
+
+            fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=selectOf&idAdherent=' + idAdherent)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(livresEmpruntes => {
+                    if (livresEmpruntes && livresEmpruntes.length > 0) {
+                        livresEmpruntes.forEach(emprunt => {
+                            const livreDiv = document.createElement('div');
+                            livreDiv.textContent = `Livre ID: ${emprunt.idLivre}`;
+                            modalLivresList.appendChild(livreDiv);
+                        });
+                    } else {
+                        const noLivresDiv = document.createElement('div');
+                        noLivresDiv.textContent = "Aucun livre emprunté.";
+                        modalLivresList.appendChild(noLivresDiv);
+                    }
+
+                    modal.style.display = "flex";
+                })
+                .catch(error => {
+                    console.error("Erreur de récupération des livres empruntés:", error);
+                    modalAdherentName.textContent = `Impossible de récupérer les livres pour ${nomAdherent}.`;
+                    modalLivresList.innerHTML = '';
+                    modal.style.display = "flex";
+                });
+        })
+        .catch(error => {
+            console.error("Erreur de récupération des informations de l'adhérent:", error);
+            modalAdherentName.textContent = "Impossible de récupérer les informations de l'adhérent.";
+            modalLivresList.innerHTML = '';
+            modal.style.display = "flex";
         });
-}
+};
 
 function preterLivre(idLivre) {
     // TODO : par un clic sur le titre du livre disponible à l’emprunt, à une fenêtre qui permet de prêter le livre à un adhérent ;
@@ -178,9 +230,6 @@ function addLivre() {
 function nblivre(adherent) {
     return fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur réseau ou réponse du serveur non valide');
-            }
             return response.json();
         })
         .then(data => {

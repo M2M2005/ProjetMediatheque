@@ -131,12 +131,7 @@ class Model
             $values_string = '(' . join(',', array_map("my_prepend", $attributes)) . ')';
 
             $sql = "INSERT INTO $table $into_string VALUES $values_string";
-            // Preparation de la requete
             $req = self::$pdo->prepare($sql);
-            // execution de la requete
-            // return $req->execute($data);
-
-            // Exécution de la requête avec transaction
             self::$pdo->beginTransaction();
             $req->execute($data);
             $id = self::$pdo->lastInsertId();
@@ -147,30 +142,6 @@ class Model
             return null;
         }
     }
-
-    public function numberOf($data) {
-    try {
-            $table_name = static::$object;
-            $primary_key = static::$primary;
-            $sql = "SELECT COUNT(*) as count FROM $table_name WHERE $primary_key=:primary";
-            // Préparation de la requête
-            $req_prep = Model::$pdo->prepare($sql);
-
-            $values = array(
-                "primary" => $data[$primary_key]
-            );
-            // On donne les valeurs et on exécute la requête
-            $req_prep->execute($values);
-
-            // On récupère le résultat
-            $result = $req_prep->fetch(PDO::FETCH_ASSOC);
-            return $result['count'];
-        } catch (PDOException $e) {
-            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
-            return null;
-        }
-    }
 }
 
-// on initialise la connexion $pdo
 Model::init_pdo();
