@@ -13,17 +13,35 @@ getAllLivresEmpruntes();
 function getAllAdherents() {
     fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=readAll')
         .then(response => response.json())
-        .then(data => {
-            console.log('Adherents data:', data);
-            mediatheque.adherents = data.map(adherent => {
-                // TODO : Ajouter info sur les livres empruntés par l’adhérent + img livre
-                return `<div>
-                    <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
-                    ${adherent.nomAdherent} 
-                    (${nblivre(adherent)} emprunt${adherent.nombreLivresEmpruntes > 1 ? 's' : ''} 
-                    <img src="img/livre.svg" alt="livre" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
-                </div>`;
-            }).join('');
+        .then(adherentsData => {
+            console.log('Adherents data:', adherentsData);
+            const promises = adherentsData.map(adherent => {
+                return nblivre(adherent).then(count => {
+                    adherent.nombreLivresEmpruntes = count !== null ? count : 'N/A'; // Gérer le cas null
+                    return `<div>
+                        <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
+                        ${adherent.nomAdherent} 
+                        (${adherent.nombreLivresEmpruntes} emprunt${adherent.nombreLivresEmpruntes > 1 ? 's' : ''} 
+                        <img src="img/book.svg" alt="book" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
+                    </div>`;
+                });
+            });
+
+            Promise.all(promises)
+                .then(resolvedHtmlStrings => {
+                    mediatheque.adherents = resolvedHtmlStrings.join('');
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la construction des adhérents avec les emprunts:", error);
+                    mediatheque.adherents = adherentsData.map(adherent => {
+                        return `<div>
+                            <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
+                            ${adherent.nomAdherent} 
+                            (Erreur lors du chargement des emprunts 
+                            <img src="img/book.svg" alt="book" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
+                        </div>`;
+                    }).join('');
+                });
         });
 }
 
@@ -158,13 +176,27 @@ function addLivre() {
 }
 
 function nblivre(adherent) {
-     return fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
-        .then(response => response.text());
+    return fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau ou réponse du serveur non valide');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                console.error("Erreur côté serveur pour ID " + adherent.idAdherent + ":", data.error);
+                return null;
+            }
+            return data.count; // Retourne le nombre
+        })
+        .catch(error => {
+            console.error("Erreur lors de la récupération du nombre d'emprunts pour ID " + adherent.idAdherent + ":", error);
+            return null;
+        });
 }
 
-// Add event listeners to the buttons
 document.getElementById('ajouterAdherent').addEventListener('click', addAdherent);
 document.getElementById('ajouterLivre').addEventListener('click', addLivre);
-
 
 startReactiveDom();

@@ -39,13 +39,22 @@ class ControllerEmprunt
     }
 
     static function nomberOfEmprunts()
-    {
-        header('Content-Type: application/json');
-        try {
-            $count = ModelEmprunt::numberOf($_idAdherent = $_GET["idAdherent"]);
-            echo json_encode(["count" => $count]);
-        } catch (Exception $e) {
-            echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+        {
+            header('Content-Type: application/json');
+            try {
+                $idAdherent = $_GET["idAdherent"] ?? null;
+                if ($idAdherent === null) {
+                    echo json_encode(["error" => "L'ID de l'adhérent est manquant."]);
+                    return;
+                }
+                $count = ModelEmprunt::numberOfEmprunts($idAdherent);
+                if ($count !== null) {
+                    echo json_encode(["count" => $count]);
+                } else {
+                    echo json_encode(["error" => "Une erreur est survenue lors de la récupération du nombre d'emprunts."]);
+                }
+            } catch (Exception $e) {
+                echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+            }
         }
-    }
 }
