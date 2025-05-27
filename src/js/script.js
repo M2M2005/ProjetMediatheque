@@ -30,6 +30,10 @@ function getAllAdherents() {
                 .then(resolvedHtmlStrings => {
                     mediatheque.adherents = resolvedHtmlStrings.join('');
                 })
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des adhérents:', error);
+            mediatheque.adherents = '<div>Erreur lors du chargement des adhérents</div>';
         });
 }
 
@@ -45,38 +49,44 @@ function getAllLivresDisponibles() {
                     <img src="img/book.svg" alt="book" onclick="preterLivre(${livre.idLivre})">
                     </a></div>`;
             }).join('');
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des livres disponibles:', error);
+            mediatheque.livresDisponibles = '<div>Erreur lors du chargement des livres</div>';
         });
 }
 
-function getAllLivresEmpruntes() {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=readAll')
-        .then(response => {
-            return response.json();
-        })
-        .then(empruntsData => {
-            const empruntPromises = empruntsData.map(emprunt => {
-                return fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`)
-                    .then(response => {
-                        return response.json();
-                    })
-                    .then(livreData => {
-                        emprunt.titreLivre = livreData && livreData.titreLivre ? livreData.titreLivre : `(ID ${emprunt.idLivre} - Titre inconnu)`;
-                        return emprunt;
-                    });
-            });
-
-            Promise.all(empruntPromises)
-                .then(resolvedEmprunts => {
-                    mediatheque.livresEmpruntes = resolvedEmprunts.map(emprunt => {
-                        return `<div>
-                            <img src="img/x.svg" onclick="window.restituerLivre(${emprunt.idLivre})" alt="delete">
-                            ${emprunt.titreLivre} 
-                            <img src="img/person.svg" alt="person" onclick="window.afficherLivresAdherent(${emprunt.idAdherent})">
-                            <img src="img/image.svg" alt="image" onclick="window.afficherImageLivre(${emprunt.idLivre})">
-                        </div>`;
-                    }).join('');
-                });
+async function getAllLivresEmpruntes() {
+    try {
+        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=readAll');
+        const empruntsData = await response.json();
+        
+        const empruntPromises = empruntsData.map(async (emprunt) => {
+            try {
+                const livreResponse = await fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`);
+                const livreData = await livreResponse.json();
+                emprunt.titreLivre = livreData && livreData.titreLivre ? livreData.titreLivre : `(ID ${emprunt.idLivre} - Titre inconnu)`;
+                return emprunt;
+            } catch (error) {
+                console.error(`Erreur lors de la récupération du livre ${emprunt.idLivre}:`, error);
+                emprunt.titreLivre = `(ID ${emprunt.idLivre} - Erreur)`;
+                return emprunt;
+            }
         });
+        
+        const resolvedEmprunts = await Promise.all(empruntPromises);
+        mediatheque.livresEmpruntes = resolvedEmprunts.map(emprunt => {
+            return `<div>
+                <img src="img/x.svg" onclick="window.restituerLivre(${emprunt.idLivre})" alt="delete">
+                ${emprunt.titreLivre} 
+                <img src="img/person.svg" alt="person" onclick="window.afficherLivresAdherent(${emprunt.idAdherent})">
+                <img src="img/image.svg" alt="image" onclick="window.afficherImageLivre(${emprunt.idLivre})">
+            </div>`;
+        }).join('');
+    } catch (error) {
+        console.error('Erreur lors du chargement des emprunts:', error);
+        mediatheque.livresEmpruntes = '<div>Erreur lors du chargement des emprunts</div>';
+    }
 }
 
 window.afficherLivresAdherent = function (idAdherent) {
@@ -143,26 +153,28 @@ window.afficherLivresAdherent = function (idAdherent) {
         });
 };
 
-window.preterLivre = function (idLivre) {
+window.preterLivre = async function (idLivre) {
     const idAdherent = prompt("Entrez l'ID de l'adhérent à qui prêter le livre:");
 
     if (idAdherent) {
-        const formData = new FormData();
-        formData.append('idAdherent', idAdherent);
-        formData.append('idLivre', idLivre);
+        try {
+            const formData = new FormData();
+            formData.append('idAdherent', idAdherent);
+            formData.append('idLivre', idLivre);
 
-        fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=create', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                return response.text();
-            })
-            .then(data => {
-                console.log('Nouvel emprunt:', data);
-                getAllLivresDisponibles();
-                getAllLivresEmpruntes();
-            })
+            const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=create', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.text();
+            console.log('Nouvel emprunt:', data);
+            getAllLivresDisponibles();
+            getAllLivresEmpruntes();
+        } catch (error) {
+            console.error('Erreur lors du prêt du livre:', error);
+            alert('Erreur lors du prêt du livre');
+        }
     }
 }
 
@@ -176,6 +188,10 @@ window.restituerLivre = function (idLivre) {
             .then(data => {
                 getAllLivresDisponibles();
                 getAllLivresEmpruntes();
+            })
+            .catch(error => {
+                console.error('Erreur lors de la restitution du livre:', error);
+                alert('Erreur lors de la restitution du livre');
             });
     }
 };
@@ -186,6 +202,10 @@ window.deleteLivre = function (idLivre) {
         .then(data => {
             getAllLivresDisponibles();
             getAllLivresEmpruntes();
+        })
+        .catch(error => {
+            console.error('Erreur lors de la suppression du livre:', error);
+            alert('Erreur lors de la suppression du livre');
         });
 }
 
@@ -195,41 +215,63 @@ window.deleteAdherent = function (idAdherent) {
         .then(data => {
             console.log('Adherent deleted:', idAdherent);
             getAllAdherents(); // Actualiser la liste après la suppression
+        })
+        .catch(error => {
+            console.error('Erreur lors de la suppression de l\'adhérent:', error);
+            alert('Erreur lors de la suppression de l\'adhérent');
         });
 }
 
-function addAdherent() {
+async function addAdherent() {
     const nomAdherent = document.getElementById('nomAdherent').value;
-    const formData = new FormData();
-    formData.append('nom', nomAdherent);
-    document.getElementById('nomAdherent').value = '';
+    if (!nomAdherent.trim()) {
+        alert('Veuillez entrer un nom d\'adhérent');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('nom', nomAdherent);
+        document.getElementById('nomAdherent').value = '';
 
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=create', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.text())
-        .then(data => {
-            console.log('New adherent ID:', data);
-            getAllAdherents(); // Actualiser la liste après l'ajout
+        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=create', {
+            method: 'POST',
+            body: formData
         });
+        
+        const data = await response.text();
+        console.log('New adherent ID:', data);
+        getAllAdherents(); // Actualiser la liste après l'ajout
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout de l\'adhérent:', error);
+        alert('Erreur lors de l\'ajout de l\'adhérent');
+    }
 }
 
-function addLivre() {
+async function addLivre() {
     const titreLivre = document.getElementById('titreLivre').value;
-    const formData = new FormData();
-    formData.append('titre', titreLivre);
-    document.getElementById('titreLivre').value = '';
+    if (!titreLivre.trim()) {
+        alert('Veuillez entrer un titre de livre');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('titre', titreLivre);
+        document.getElementById('titreLivre').value = '';
 
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=create', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.text())
-        .then(data => {
-            console.log('New livre ID:', data);
-            getAllLivresDisponibles();
+        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=create', {
+            method: 'POST',
+            body: formData
         });
+        
+        const data = await response.text();
+        console.log('New livre ID:', data);
+        getAllLivresDisponibles();
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du livre:', error);
+        alert('Erreur lors de l\'ajout du livre');
+    }
 }
 
 function nblivre(adherent) {
@@ -240,11 +282,38 @@ function nblivre(adherent) {
         .then(data => {
             return data.count; // Retourne le nombre
         })
+        .catch(error => {
+            console.error('Erreur lors du comptage des emprunts:', error);
+            return 0;
+        });
 }
 
-window.afficherImageLivre = function (idLivre) {
-    // TODO : appelle a API Google Books pour afficher l'image du livre
-    // Affiche dans un nouvelle fenêtre
+window.afficherImageLivre = async function (idLivre) {
+    try {
+        const response = await fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${idLivre}`);
+        const livre = await response.json();
+        
+        if (livre && livre.titreLivre) {
+            const googleBooksResponse = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(livre.titreLivre)}`);
+            const data = await googleBooksResponse.json();
+            
+            if (data.items && data.items.length > 0) {
+                const bookInfo = data.items[0].volumeInfo;
+                const imageUrl = bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail : null;
+                
+                if (imageUrl) {
+                    window.open(imageUrl, '_blank', 'width=400,height=600');
+                } else {
+                    alert("Aucune image trouvée pour ce livre");
+                }
+            } else {
+                alert("Livre non trouvé dans Google Books");
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de la recherche de l\'image:', error);
+        alert("Erreur lors de la recherche de l'image du livre");
+    }
 }
 
 document.getElementById('ajouterAdherent').addEventListener('click', addAdherent);
