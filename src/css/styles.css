@@ -156,7 +156,7 @@ input {
     to {top: 0; opacity: 1}
 }
 
-.close-button {
+.close-button, .close-button-image {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -168,7 +168,9 @@ input {
 }
 
 .close-button:hover,
-.close-button:focus {
+.close-button:focus,
+.close-button-image:hover,
+.close-button-image:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -181,4 +183,33 @@ input {
 
 #modalLivresList div:last-child {
     border-bottom: none;
+}
+
+#modalLivreDetails {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+#modalLivreImage {
+    max-width: 200px;
+    max-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#modalLivreInfo {
+    flex: 1;
+    padding: 10px;
+}
+
+#modalLivreInfo p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+#modalLivreInfo strong {
+    color: #333;
 }

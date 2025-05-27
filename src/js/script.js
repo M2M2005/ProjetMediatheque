@@ -171,6 +171,7 @@ window.preterLivre = async function (idLivre) {
             console.log('Nouvel emprunt:', data);
             getAllLivresDisponibles();
             getAllLivresEmpruntes();
+            getAllAdherents();
         } catch (error) {
             console.error('Erreur lors du prêt du livre:', error);
             alert('Erreur lors du prêt du livre');
@@ -188,6 +189,7 @@ window.restituerLivre = function (idLivre) {
             .then(data => {
                 getAllLivresDisponibles();
                 getAllLivresEmpruntes();
+                getAllAdherents();
             })
             .catch(error => {
                 console.error('Erreur lors de la restitution du livre:', error);
@@ -294,25 +296,78 @@ window.afficherImageLivre = async function (idLivre) {
         const livre = await response.json();
         
         if (livre && livre.titreLivre) {
-            const googleBooksResponse = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(livre.titreLivre)}`);
-            const data = await googleBooksResponse.json();
+            const modal = document.getElementById('modalImageLivre');
+            const modalTitle = document.getElementById('modalLivreTitle');
+            const modalImage = document.getElementById('modalLivreImage');
+            const modalInfo = document.getElementById('modalLivreInfo');
+            const closeButton = document.querySelector('.close-button-image');
             
-            if (data.items && data.items.length > 0) {
-                const bookInfo = data.items[0].volumeInfo;
-                const imageUrl = bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail : null;
-                
-                if (imageUrl) {
-                    window.open(imageUrl, '_blank', 'width=400,height=600');
-                } else {
-                    alert("Aucune image trouvée pour ce livre");
+            modalTitle.textContent = livre.titreLivre;
+            modalImage.src = '';
+            modalInfo.innerHTML = '<p>Recherche des informations...</p>';
+            
+            closeButton.onclick = function () {
+                modal.style.display = "none";
+            }
+            
+            window.onclick = function (event) {
+                if (event.target == modal || event.target == document.getElementById('modalLivresAdherent')) {
+                    event.target.style.display = "none";
                 }
-            } else {
-                alert("Livre non trouvé dans Google Books");
+            }
+            
+            modal.style.display = "flex";
+            
+            try {
+                const googleBooksResponse = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(livre.titreLivre)}`);
+                const data = await googleBooksResponse.json();
+                
+                if (data.items && data.items.length > 0) {
+                    const bookInfo = data.items[0].volumeInfo;
+                    const imageUrl = bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail : null;
+                    
+                    if (imageUrl) {
+                        modalImage.src = imageUrl;
+                        modalImage.style.display = 'block';
+                    } else {
+                        modalImage.style.display = 'none';
+                    }
+                    
+                    let infoHtml = '';
+                    if (bookInfo.authors) {
+                        infoHtml += `<p><strong>Auteur(s) :</strong> ${bookInfo.authors.join(', ')}</p>`;
+                    }
+                    if (bookInfo.publishedDate) {
+                        infoHtml += `<p><strong>Date de publication :</strong> ${bookInfo.publishedDate}</p>`;
+                    }
+                    if (bookInfo.publisher) {
+                        infoHtml += `<p><strong>Éditeur :</strong> ${bookInfo.publisher}</p>`;
+                    }
+                    if (bookInfo.pageCount) {
+                        infoHtml += `<p><strong>Nombre de pages :</strong> ${bookInfo.pageCount}</p>`;
+                    }
+                    if (bookInfo.description) {
+                        infoHtml += `<p><strong>Description :</strong><br>${bookInfo.description.substring(0, 300)}${bookInfo.description.length > 300 ? '...' : ''}</p>`;
+                    }
+                    
+                    if (infoHtml === '') {
+                        infoHtml = '<p>Aucune information supplémentaire disponible pour ce livre.</p>';
+                    }
+                    
+                    modalInfo.innerHTML = infoHtml;
+                } else {
+                    modalImage.style.display = 'none';
+                    modalInfo.innerHTML = '<p>Livre non trouvé dans Google Books.</p>';
+                }
+            } catch (googleError) {
+                console.error('Erreur Google Books:', googleError);
+                modalImage.style.display = 'none';
+                modalInfo.innerHTML = '<p>Erreur lors de la recherche des informations du livre.</p>';
             }
         }
     } catch (error) {
-        console.error('Erreur lors de la recherche de l\'image:', error);
-        alert("Erreur lors de la recherche de l'image du livre");
+        console.error('Erreur lors de la recherche du livre:', error);
+        alert("Erreur lors de la recherche du livre");
     }
 }
 
