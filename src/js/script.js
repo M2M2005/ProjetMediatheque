@@ -47,6 +47,7 @@ function getAllLivresDisponibles() {
                     <img src="img/x.svg" onclick="deleteLivre(${livre.idLivre})" alt="delete"> 
                     ${livre.titreLivre}
                     <img src="img/book.svg" alt="book" onclick="preterLivre(${livre.idLivre})">
+                    <img src="img/image.svg" alt="image" onclick="window.afficherImageLivre(${livre.idLivre})">
                     </a></div>`;
             }).join('');
         })
