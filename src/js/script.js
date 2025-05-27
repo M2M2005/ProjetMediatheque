@@ -14,7 +14,6 @@ function getAllAdherents() {
     fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=readAll')
         .then(response => response.json())
         .then(adherentsData => {
-            console.log('Adherents data:', adherentsData);
             const promises = adherentsData.map(adherent => {
                 return nblivre(adherent).then(count => {
                     adherent.nombreLivresEmpruntes = count !== null ? count : 'N/A';
@@ -31,17 +30,6 @@ function getAllAdherents() {
                 .then(resolvedHtmlStrings => {
                     mediatheque.adherents = resolvedHtmlStrings.join('');
                 })
-                .catch(error => {
-                    console.error("Erreur lors de la construction des adhérents avec les emprunts:", error);
-                    mediatheque.adherents = adherentsData.map(adherent => {
-                        return `<div>
-                            <img src="img/x.svg" onclick="deleteAdherent(${adherent.idAdherent})" alt="delete"> 
-                            ${adherent.nomAdherent} 
-                            (Erreur lors du chargement des emprunts 
-                            <img src="img/book.svg" alt="book" onclick="afficherLivresAdherent(${adherent.idAdherent})">)
-                        </div>`;
-                    }).join('');
-                });
         });
 }
 
@@ -51,19 +39,41 @@ function getAllLivresDisponibles() {
         .then(data => {
             console.log('Livres disponibles data:', data);
             mediatheque.livresDisponibles = data.map(livre => {
-                return `<div><img src="img/x.svg" onclick="deleteLivre(${livre.idLivre})" alt="delete"><a href="#" onclick="preterLivre(${livre.idLivre})"> ${livre.titreLivre}</a></div>`;
+                return `<div>
+                    <img src="img/x.svg" onclick="deleteLivre(${livre.idLivre})" alt="delete"> 
+                    ${livre.titreLivre}
+                    <img src="img/book.svg" alt="book" onclick="preterLivre(${livre.idLivre})">
+                    </a></div>`;
             }).join('');
         });
 }
 
 function getAllLivresEmpruntes() {
     fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=readAll')
-        .then(response => response.json())
-        .then(data => {
-            console.log('Livres empruntés data:', data);
-            mediatheque.livresEmpruntes = data.map(emprunt => {
-                return `<div><img src="img/x.svg" onclick="restituerLivre(${emprunt.idLivre})" alt="delete">Livre ID: ${emprunt.idLivre}, Adhérent ID: ${emprunt.idAdherent}</div>`;
-            }).join('');
+        .then(response => {
+            return response.json();
+        })
+        .then(empruntsData => {
+            const empruntPromises = empruntsData.map(emprunt => {
+                return fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`)
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(livreData => {
+                        emprunt.titreLivre = livreData && livreData.titreLivre ? livreData.titreLivre : `(ID ${emprunt.idLivre} - Titre inconnu)`;
+                        return emprunt;
+                    });
+            });
+
+            Promise.all(empruntPromises)
+                .then(resolvedEmprunts => {
+                    mediatheque.livresEmpruntes = resolvedEmprunts.map(emprunt => {
+                        return `<div>
+                            <img src="img/x.svg" onclick="window.restituerLivre(${emprunt.idLivre})" alt="delete">
+                            ${emprunt.titreLivre}, Adhérent ID: ${emprunt.idAdherent}
+                        </div>`;
+                    }).join('');
+                });
         });
 }
 
@@ -93,7 +103,7 @@ window.afficherLivresAdherent = function (idAdherent) {
             return response.json();
         })
         .then(adherentData => {
-                nomAdherent = adherentData.nomAdherent;
+            nomAdherent = adherentData.nomAdherent;
             modalAdherentName.textContent = `Livres empruntés par ${nomAdherent}`;
 
             fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=selectOf&idAdherent=' + idAdherent)
@@ -140,18 +150,19 @@ window.preterLivre = function (idLivre) {
     }
 }
 
-function restituerLivre(idLivre) {
-    // TODO : par un clic sur le titre du livre prêté, à une fenêtre proposant la restitution du livre.
-    // voir img readme
-    // utiliser les méthodes natives alert(), prompt() et confirm()
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=delete&idLivre=' + idLivre)
-        .then(response => response.text())
-        .then(data => {
-            console.log('Emprunt deleted:', idLivre);
-            getAllLivresDisponibles(); // Actualiser la liste après la suppression
-            getAllLivresEmpruntes();
-        });
-}
+window.restituerLivre = function (idLivre) {
+    const confirmation = confirm("Êtes-vous sûr de vouloir restituer ce livre ?");
+    if (confirmation) {
+        fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=delete&idLivre=' + idLivre)
+            .then(response => {
+                return response.text();
+            })
+            .then(data => {
+                getAllLivresDisponibles();
+                getAllLivresEmpruntes();
+            });
+    }
+};
 
 window.deleteLivre = function (idLivre) {
     fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=delete&id=' + idLivre)
