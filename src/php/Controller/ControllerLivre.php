@@ -22,6 +22,17 @@ class ControllerLivre
         }
     }
 
+    static function readAllDisponible()
+        {
+            header('Content-Type: application/json');
+            try {
+                $livres = ModelLivre::selectAllDisponible();
+                echo json_encode($livres);
+            } catch (Exception $e) {
+                echo json_encode(["error" => $e->getMessage() . " (SQLSTATE: " . $e->getCode() . ")"]);
+            }
+        }
+
     static function create()
     {
         $livre = [

@@ -43,6 +43,24 @@ class Model
         }
     }
 
+    public static function selectAllDisponible()
+    {
+        try {
+            $pdo = self::$pdo;
+            $table_name = static::$object;
+            $primary_key = static::$primary;
+            $class_name = 'Model' . ucfirst(static::$object);
+            $sql = "SELECT * FROM $table_name WHERE $primary_key NOT IN (SELECT idLivre FROM emprunt)";
+
+            $rep = $pdo->query($sql);
+            $rep->setFetchMode(PDO::FETCH_CLASS, $class_name);
+            return $rep->fetchAll();
+        } catch (PDOException $e) {
+            echo json_encode(["error" => $e->getMessage()]);
+            return null;
+        }
+    }
+
     public static function select($primary)
     {
         try {
@@ -50,19 +68,16 @@ class Model
             $class_name = 'Model' . ucfirst(static::$object);
             $primary_key = static::$primary;
             $sql = "SELECT * from $table_name WHERE $primary_key=:primary";
-            // Préparation de la requête
             $req_prep = Model::$pdo->prepare($sql);
 
             $values = array(
                 "primary" => $primary
             );
-            // On donne les valeurs et on exécute la requête
             $req_prep->execute($values);
 
-            // On récupère les résultats comme précédemment
             $req_prep->setFetchMode(PDO::FETCH_CLASS, $class_name);
             $tab_results = $req_prep->fetchAll();
-            // Attention, si il n'y a pas de résultats, on renvoie false
+
             if (empty($tab_results))
                 return false;
             return $tab_results[0];

@@ -34,7 +34,7 @@ function getAllAdherents() {
 }
 
 function getAllLivresDisponibles() {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=readAll')
+    fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=readAllDisponible')
         .then(response => response.json())
         .then(data => {
             console.log('Livres disponibles data:', data);
