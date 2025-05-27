@@ -82,7 +82,7 @@ class Model
                 return false;
             return $tab_results[0];
         } catch (PDOException $e) {
-            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            echo json_encode(["error" => $e->getMessage()]);
             return null;
         }
     }
@@ -93,16 +93,15 @@ class Model
             $table_name = static::$object;
             $primary_key = static::$primary;
             $sql = "DELETE FROM $table_name WHERE $primary_key=:primary;";
-            // Préparation de la requête
             $req_prep = Model::$pdo->prepare($sql);
 
             $values = array(
                 "primary" => $primary
             );
-            // On donne les valeurs et on exécute la requête
+
             return $req_prep->execute($values);
         } catch (PDOException $e) {
-            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            echo json_encode(["error" => $e->getMessage()]);
             return false;
         }
     }
@@ -118,13 +117,11 @@ class Model
             }
             $set_string = join(',', $set_parts);
             $sql = "UPDATE $table_name SET $set_string WHERE $primary_key=:$primary_key";
-            // Préparation de la requête
             $req_prep = Model::$pdo->prepare($sql);
 
-            // On donne les valeurs et on exécute la requête
             return $req_prep->execute($data);
         } catch (PDOException $e) {
-            echo json_encode(["error" => $e->getMessage()]); // affiche un message d'erreur
+            echo json_encode(["error" => $e->getMessage()]);
             return false;
         }
     }
@@ -137,7 +134,6 @@ class Model
             $attributes = array_keys($data);
             $into_string = '(' . join(',', $attributes) . ')';
 
-            //Rajoute ":" avant les attributs
             function my_prepend($s)
             {
                 return ":" . $s;

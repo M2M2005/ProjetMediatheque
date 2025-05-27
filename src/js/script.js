@@ -70,7 +70,9 @@ function getAllLivresEmpruntes() {
                     mediatheque.livresEmpruntes = resolvedEmprunts.map(emprunt => {
                         return `<div>
                             <img src="img/x.svg" onclick="window.restituerLivre(${emprunt.idLivre})" alt="delete">
-                            ${emprunt.titreLivre}, Adhérent ID: ${emprunt.idAdherent}
+                            ${emprunt.titreLivre} 
+                            <img src="img/person.svg" alt="person" onclick="window.afficherLivresAdherent(${emprunt.idAdherent})">
+                            <img src="img/image.svg" alt="image" onclick="window.afficherImageLivre(${emprunt.idLivre})">
                         </div>`;
                     }).join('');
                 });
@@ -110,21 +112,35 @@ window.afficherLivresAdherent = function (idAdherent) {
                 .then(response => {
                     return response.json();
                 })
-                .then(livresEmpruntes => {
-                    if (livresEmpruntes && livresEmpruntes.length > 0) {
-                        livresEmpruntes.forEach(emprunt => {
-                            const livreDiv = document.createElement('div');
-                            livreDiv.textContent = `Livre ID: ${emprunt.idLivre}`;
-                            modalLivresList.appendChild(livreDiv);
+                .then(empruntsData => {
+                    const livrePromises = empruntsData.map(emprunt => {
+                        return fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`)
+                            .then(response => {
+                                return response.json();
+                            })
+                            .then(livreData => {
+                                emprunt.titreLivre = livreData && livreData.titreLivre ? livreData.titreLivre : `Titre inconnu (ID: ${emprunt.idLivre})`;
+                                return emprunt;
+                            });
+                    });
+
+                    Promise.all(livrePromises)
+                        .then(resolvedEmprunts => {
+                            if (resolvedEmprunts && resolvedEmprunts.length > 0) {
+                                resolvedEmprunts.forEach(emprunt => {
+                                    const livreDiv = document.createElement('div');
+                                    livreDiv.textContent = `Livre : ${emprunt.titreLivre}`;
+                                    modalLivresList.appendChild(livreDiv);
+                                });
+                            } else {
+                                const noLivresDiv = document.createElement('div');
+                                noLivresDiv.textContent = "Aucun livre emprunté.";
+                                modalLivresList.appendChild(noLivresDiv);
+                            }
+                            modal.style.display = "flex";
                         });
-                    } else {
-                        const noLivresDiv = document.createElement('div');
-                        noLivresDiv.textContent = "Aucun livre emprunté.";
-                        modalLivresList.appendChild(noLivresDiv);
-                    }
-                    modal.style.display = "flex";
-                })
-        })
+                });
+        });
 };
 
 window.preterLivre = function (idLivre) {
@@ -224,6 +240,11 @@ function nblivre(adherent) {
         .then(data => {
             return data.count; // Retourne le nombre
         })
+}
+
+window.afficherImageLivre = function (idLivre) {
+    // TODO : appelle a API Google Books pour afficher l'image du livre
+    // Affiche dans un nouvelle fenêtre
 }
 
 document.getElementById('ajouterAdherent').addEventListener('click', addAdherent);
