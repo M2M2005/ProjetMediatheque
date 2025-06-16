@@ -11,7 +11,7 @@ getAllLivresDisponibles();
 getAllLivresEmpruntes();
 
 function getAllAdherents() {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=readAll')
+    fetch('php/Controller/ControllerAdherent.php?action=readAll')
         .then(response => response.json())
         .then(adherentsData => {
             const promises = adherentsData.map(adherent => {
@@ -38,7 +38,7 @@ function getAllAdherents() {
 }
 
 function getAllLivresDisponibles() {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=readAllDisponible')
+    fetch('php/Controller/ControllerLivre.php?action=readAllDisponible')
         .then(response => response.json())
         .then(data => {
             console.log('Livres disponibles data:', data);
@@ -59,12 +59,12 @@ function getAllLivresDisponibles() {
 
 async function getAllLivresEmpruntes() {
     try {
-        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=readAll');
+        const response = await fetch('php/Controller/ControllerEmprunt.php?action=readAll');
         const empruntsData = await response.json();
         
         const empruntPromises = empruntsData.map(async (emprunt) => {
             try {
-                const livreResponse = await fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`);
+                const livreResponse = await fetch(`php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`);
                 const livreData = await livreResponse.json();
                 emprunt.titreLivre = livreData && livreData.titreLivre ? livreData.titreLivre : `(ID ${emprunt.idLivre} - Titre inconnu)`;
                 return emprunt;
@@ -111,7 +111,7 @@ window.afficherLivresAdherent = function (idAdherent) {
         }
     }
 
-    fetch(`/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=select&id=${idAdherent}`)
+    fetch(`php/Controller/ControllerAdherent.php?action=select&id=${idAdherent}`)
         .then(response => {
             return response.json();
         })
@@ -119,13 +119,13 @@ window.afficherLivresAdherent = function (idAdherent) {
             nomAdherent = adherentData.nomAdherent;
             modalAdherentName.textContent = `Livres empruntés par ${nomAdherent}`;
 
-            fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=selectOf&idAdherent=' + idAdherent)
+            fetch('php/Controller/ControllerEmprunt.php?action=selectOf&idAdherent=' + idAdherent)
                 .then(response => {
                     return response.json();
                 })
                 .then(empruntsData => {
                     const livrePromises = empruntsData.map(emprunt => {
-                        return fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`)
+                        return fetch(`php/Controller/ControllerLivre.php?action=select&id=${emprunt.idLivre}`)
                             .then(response => {
                                 return response.json();
                             })
@@ -163,7 +163,7 @@ window.preterLivre = async function (idLivre) {
             formData.append('idAdherent', idAdherent);
             formData.append('idLivre', idLivre);
 
-            const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=create', {
+            const response = await fetch('php/Controller/ControllerEmprunt.php?action=create', {
                 method: 'POST',
                 body: formData
             });
@@ -183,7 +183,7 @@ window.preterLivre = async function (idLivre) {
 window.restituerLivre = function (idLivre) {
     const confirmation = confirm("Êtes-vous sûr de vouloir restituer ce livre ?");
     if (confirmation) {
-        fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=delete&idLivre=' + idLivre)
+        fetch('php/Controller/ControllerEmprunt.php?action=delete&idLivre=' + idLivre)
             .then(response => {
                 return response.text();
             })
@@ -200,7 +200,7 @@ window.restituerLivre = function (idLivre) {
 };
 
 window.deleteLivre = function (idLivre) {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=delete&id=' + idLivre)
+    fetch('php/Controller/ControllerLivre.php?action=delete&id=' + idLivre)
         .then(response => response.text())
         .then(data => {
             getAllLivresDisponibles();
@@ -213,7 +213,7 @@ window.deleteLivre = function (idLivre) {
 }
 
 window.deleteAdherent = function (idAdherent) {
-    fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=delete&id=' + idAdherent)
+    fetch('php/Controller/ControllerAdherent.php?action=delete&id=' + idAdherent)
         .then(response => response.text())
         .then(data => {
             console.log('Adherent deleted:', idAdherent);
@@ -237,7 +237,7 @@ async function addAdherent() {
         formData.append('nom', nomAdherent);
         document.getElementById('nomAdherent').value = '';
 
-        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerAdherent.php?action=create', {
+        const response = await fetch('php/Controller/ControllerAdherent.php?action=create', {
             method: 'POST',
             body: formData
         });
@@ -263,7 +263,7 @@ async function addLivre() {
         formData.append('titre', titreLivre);
         document.getElementById('titreLivre').value = '';
 
-        const response = await fetch('/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=create', {
+        const response = await fetch('php/Controller/ControllerLivre.php?action=create', {
             method: 'POST',
             body: formData
         });
@@ -278,7 +278,7 @@ async function addLivre() {
 }
 
 function nblivre(adherent) {
-    return fetch('/ProjetMediatheque/src/php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
+    return fetch('php/Controller/ControllerEmprunt.php?action=nomberOfEmprunts&idAdherent=' + adherent.idAdherent)
         .then(response => {
             return response.json();
         })
@@ -293,7 +293,7 @@ function nblivre(adherent) {
 
 window.afficherImageLivre = async function (idLivre) {
     try {
-        const response = await fetch(`/ProjetMediatheque/src/php/Controller/ControllerLivre.php?action=select&id=${idLivre}`);
+        const response = await fetch(`php/Controller/ControllerLivre.php?action=select&id=${idLivre}`);
         const livre = await response.json();
         
         if (livre && livre.titreLivre) {
